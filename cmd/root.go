@@ -7,8 +7,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "jdk-go",
-	Short: "",
+	Use:     "jdk-go",
+	Short:   "",
+	Version: "1.0.0",
 	Long: `This is a go implementation of the JDK wrapper.
 This CLI app is used to manage your Java JDK installations.`,
 	// Uncomment the following line if your bare application

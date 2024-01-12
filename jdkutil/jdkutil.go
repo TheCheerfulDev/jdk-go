@@ -9,6 +9,25 @@ import (
 
 const versionFile string = ".java-version"
 
+var configDir string
+
+func GetConfigDir() string {
+	if configDir == "" {
+		homeDir, _ := os.UserHomeDir()
+		configDir = homeDir + "/.config/jdk-go"
+	}
+	return configDir
+}
+
+func GetCandidatesDir() string {
+	return GetConfigDir() + "/candidates"
+}
+
+func GetJenvVersionsDir() string {
+	homeDir, _ := os.UserHomeDir()
+	return homeDir + "/.jenv/versions"
+}
+
 func GetActiveVersion() (version, versionFilePath string) {
 	currentDirectory, err := os.Getwd()
 

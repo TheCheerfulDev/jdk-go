@@ -18,7 +18,6 @@ var psCmd = &cobra.Command{
 
 		homeDir, _ := os.UserHomeDir()
 		configDir = homeDir + "/.config/jdk2"
-		// check if version is an alias
 
 		file, err := os.ReadFile(configDir + "/" + activeVersion)
 
