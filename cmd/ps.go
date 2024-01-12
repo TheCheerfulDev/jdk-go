@@ -16,8 +16,7 @@ var psCmd = &cobra.Command{
 		fmt.Println("Active JDK:")
 		activeVersion, path := jdkutil.GetActiveVersion()
 
-		homeDir, _ := os.UserHomeDir()
-		configDir = homeDir + "/.config/jdk2"
+		configDir = jdkutil.GetConfigDir()
 
 		file, err := os.ReadFile(configDir + "/" + activeVersion)
 

@@ -8,8 +8,7 @@ import (
 	"strings"
 )
 
-var homeDir string
-var configDir string
+var configDir = jdkutil.GetConfigDir()
 var activeVersion string
 
 // lsCmd represents the ls command
@@ -20,9 +19,7 @@ var lsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		activeVersion, _ = jdkutil.GetActiveVersion()
 
-		// Get all the files in jdk2 folder
-		homeDir, _ = os.UserHomeDir()
-		configDir = homeDir + "/.config/jdk2"
+		configDir = jdkutil.GetConfigDir()
 		files, err := os.ReadDir(configDir)
 		if err != nil {
 			fmt.Println("Could not read the config directory")
@@ -42,7 +39,7 @@ var lsCmd = &cobra.Command{
 
 func printVersionInformation(file os.DirEntry) {
 	fileInfo, _ := file.Info()
-	readFile, _ := os.ReadFile(homeDir + "/.config/jdk2/" + file.Name())
+	readFile, _ := os.ReadFile(configDir + "/" + file.Name())
 	prefixText := getPrefixText(file.Name())
 
 	if fileInfo.Size() > 0 {

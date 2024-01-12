@@ -45,8 +45,17 @@ example:
 
 		downloadJdkFromUrl(url, version)
 		addJdk(version, alias)
-
+		printSuccessMessage(version, alias)
 	},
+}
+
+func printSuccessMessage(version, alias string) {
+
+	if alias == "" {
+		fmt.Printf("Successfully installed JDK version %v with alias %v\n", version, alias)
+		return
+	}
+	fmt.Printf("Successfully installed JDK version %v\n", version)
 }
 
 func addJdk(version, alias string) {
