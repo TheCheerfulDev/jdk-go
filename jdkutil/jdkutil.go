@@ -28,6 +28,11 @@ func GetJenvVersionsDir() string {
 	return homeDir + "/.jenv/versions"
 }
 
+func GetJenvDir() string {
+	homeDir, _ := os.UserHomeDir()
+	return homeDir + "/.jenv"
+}
+
 func GetActiveVersion() (version, versionFilePath string) {
 	currentDirectory, err := os.Getwd()
 
