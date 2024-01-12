@@ -9,6 +9,7 @@ import (
 )
 
 var homeDir string
+var configDir string
 var activeVersion string
 
 // lsCmd represents the ls command
@@ -17,11 +18,12 @@ var lsCmd = &cobra.Command{
 	Short: "List all installed JDK versions.",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		activeVersion = jdkutil.GetVersionFromJenv()
+		activeVersion, _ = jdkutil.GetActiveVersion()
 
 		// Get all the files in jdk2 folder
 		homeDir, _ = os.UserHomeDir()
-		files, err := os.ReadDir(homeDir + "/.config/jdk2")
+		configDir = homeDir + "/.config/jdk2"
+		files, err := os.ReadDir(configDir)
 		if err != nil {
 			fmt.Println("Could not read the config directory")
 			os.Exit(1)
@@ -30,7 +32,7 @@ var lsCmd = &cobra.Command{
 		fmt.Println("Installed JDKs:")
 
 		for _, file := range files {
-			if isVersionFile(file) {
+			if IsVersionFile(file) {
 				printVersionInformation(file)
 			}
 		}
@@ -58,7 +60,7 @@ func getPrefixText(version string) interface{} {
 	return " "
 }
 
-func isVersionFile(file os.DirEntry) bool {
+func IsVersionFile(file os.DirEntry) bool {
 	return !file.IsDir() && !strings.HasPrefix(file.Name(), ".")
 }
 
