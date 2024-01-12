@@ -11,13 +11,11 @@ import (
 var rmCmd = &cobra.Command{
 	Use:   "rm",
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Remove a JDK version",
+	Long: `This function removes the provided JDK, along with any alias it might have.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example usage:
+	jdk-go rm 21-tem`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// check if jdk exists
 
