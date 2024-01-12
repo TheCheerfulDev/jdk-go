@@ -37,11 +37,26 @@ example:
 
 		fmt.Print("Please provide the version of the JDK to add: ")
 		fmt.Scanln(&version)
+		version = jdkutil.RemoveNewLineFromString(version)
+
+		if version == "" {
+			fmt.Println("JDK version can't be empty")
+			os.Exit(1)
+		}
+
 		fmt.Printf("Please provide alias for JDK version %v (leave empty for none): ", version)
 		fmt.Scanln(&alias)
-
-		version = jdkutil.RemoveNewLineFromString(version)
 		alias = jdkutil.RemoveNewLineFromString(alias)
+
+		if doesFileAlreadyExist(version) {
+			fmt.Printf("JDK version %v already exists\n", version)
+			os.Exit(1)
+		}
+
+		if doesFileAlreadyExist(alias) {
+			fmt.Printf("JDK alias %v already exists\n", alias)
+			os.Exit(1)
+		}
 
 		downloadJdkFromUrl(url, version)
 		addJdk(version, alias)
@@ -49,13 +64,22 @@ example:
 	},
 }
 
+func doesFileAlreadyExist(fileName string) bool {
+	if fileName == "" {
+		return false
+	}
+
+	_, err := os.Stat(jdkutil.GetConfigDir() + "/" + fileName)
+	return !os.IsNotExist(err)
+}
+
 func printSuccessMessage(version, alias string) {
 
 	if alias == "" {
-		fmt.Printf("Successfully installed JDK version %v with alias %v\n", version, alias)
+		fmt.Printf("Successfully installed JDK version %v\n", version)
 		return
 	}
-	fmt.Printf("Successfully installed JDK version %v\n", version)
+	fmt.Printf("Successfully installed JDK version %v with alias %v\n", version, alias)
 }
 
 func addJdk(version, alias string) {

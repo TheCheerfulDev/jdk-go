@@ -14,8 +14,11 @@ var activeVersion string
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
 	Use:   "ls",
-	Short: "List all installed JDK versions.",
-	Long:  "",
+	Short: "List all installed JDK versions",
+	Long: `As the naming convention implies, this command lists all installed JDK versions.
+
+If a version is an alias, it will be displayed after ->.
+The currently active version will be preceded by an asterisk (*).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		activeVersion, _ = jdkutil.GetActiveVersion()
 

@@ -16,6 +16,7 @@ var rmCmd = &cobra.Command{
 
 Example usage:
 	jdk-go rm 21-tem`,
+	ValidArgsFunction: CustomVersionCompletion,
 	Run: func(cmd *cobra.Command, args []string) {
 		// check if jdk exists
 
@@ -28,7 +29,6 @@ Example usage:
 
 		getFilesToRemoveForVersion(versionToRemove)
 		hasAlias, aliasToRemove := getAliasForVersion(versionToRemove)
-		fmt.Println(hasAlias, aliasToRemove)
 
 		// remove aliasToRemove from jenv
 		if hasAlias {
@@ -94,4 +94,23 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func CustomVersionCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+
+	if len(args) > 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	dir, _ := os.ReadDir(jdkutil.GetConfigDir())
+
+	versions := make([]string, 2)
+
+	for _, file := range dir {
+		if IsVersionFile(file) {
+			versions = append(versions, file.Name())
+		}
+	}
+
+	return versions, cobra.ShellCompDirectiveNoFileComp
 }
