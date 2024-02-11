@@ -22,7 +22,13 @@ Example usage:
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) == 0 {
-			fileContent, _ := os.ReadFile(jdkutil.GetJenvDir() + "/version")
+			fileContent, err := os.ReadFile(jdkutil.GetJenvDir() + "/version")
+
+			if err != nil {
+				fmt.Println("No global JDK version is defined")
+				os.Exit(1)
+			}
+
 			fmt.Println(string(fileContent))
 			os.Exit(0)
 		}

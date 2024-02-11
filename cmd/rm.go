@@ -23,27 +23,26 @@ Example usage:
 		versionToRemove := args[0]
 
 		if _, err := os.Stat(jdkutil.GetConfigDir() + "/" + versionToRemove); os.IsNotExist(err) {
-			fmt.Printf("JDK %v does not exist\n", versionToRemove)
+			fmt.Printf("JDK version %v does not exist\n", versionToRemove)
 			return
 		}
 
-		getFilesToRemoveForVersion(versionToRemove)
 		hasAlias, aliasToRemove := getAliasForVersion(versionToRemove)
 
 		// remove aliasToRemove from jenv
 		if hasAlias {
-			os.Remove(jdkutil.GetJenvVersionsDir() + "/" + aliasToRemove)
+			_ = os.Remove(jdkutil.GetJenvVersionsDir() + "/" + aliasToRemove)
 			// remove aliasToRemove file
-			os.Remove(jdkutil.GetConfigDir() + "/" + aliasToRemove)
+			_ = os.Remove(jdkutil.GetConfigDir() + "/" + aliasToRemove)
 		}
 
 		// remove version from jenv
-		os.Remove(jdkutil.GetJenvVersionsDir() + "/" + versionToRemove)
+		_ = os.Remove(jdkutil.GetJenvVersionsDir() + "/" + versionToRemove)
 		// remove version file
-		os.Remove(jdkutil.GetConfigDir() + "/" + versionToRemove)
+		_ = os.Remove(jdkutil.GetConfigDir() + "/" + versionToRemove)
 
 		// remove candidate version directory
-		os.RemoveAll(jdkutil.GetCandidatesDir() + "/" + versionToRemove)
+		_ = os.RemoveAll(jdkutil.GetCandidatesDir() + "/" + versionToRemove)
 
 		printRemovalSuccesMessage(versionToRemove, aliasToRemove, hasAlias)
 	},
@@ -78,10 +77,6 @@ func getAliasForVersion(version string) (bool, string) {
 	return false, ""
 }
 
-func getFilesToRemoveForVersion(remove string) {
-
-}
-
 func init() {
 	rootCmd.AddCommand(rmCmd)
 
@@ -96,7 +91,7 @@ func init() {
 	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func CustomVersionCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func CustomVersionCompletion(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 
 	if len(args) > 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp

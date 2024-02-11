@@ -20,7 +20,12 @@ var lsCmd = &cobra.Command{
 If a version is an alias, it will be displayed after ->.
 The currently active version will be preceded by an asterisk (*).`,
 	Run: func(cmd *cobra.Command, args []string) {
-		activeVersion, _ = jdkutil.GetActiveVersion()
+		var err error
+		activeVersion, _, err = jdkutil.GetActiveVersion()
+		if err != nil {
+			fmt.Println("Could not read the active version")
+			os.Exit(1)
+		}
 
 		configDir = jdkutil.GetConfigDir()
 		files, err := os.ReadDir(configDir)
@@ -66,14 +71,4 @@ func IsVersionFile(file os.DirEntry) bool {
 
 func init() {
 	rootCmd.AddCommand(lsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// lsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// lsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

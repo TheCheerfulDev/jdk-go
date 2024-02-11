@@ -8,6 +8,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -86,11 +87,10 @@ func addJdk(version, alias string) {
 	fileName := jdkutil.GetCandidatesDir() + "/" + version + ".tar.gz"
 	destination := jdkutil.GetCandidatesDir() + "/" + version
 
-	untarJdk(fileName, destination)
-	moveJdkToCorrectLocation(destination, version)
+	unTarJdk(fileName, destination)
 	addVersion(version)
 	addAlias(version, alias)
-	createSimlinks(version)
+	createSimLinks(version)
 	addJdkToJenv(version, alias)
 
 }
@@ -114,18 +114,27 @@ func addJdkToJenv(version, alias string) {
 	}
 }
 
-func moveJdkToCorrectLocation(path, version string) {
-	dir, _ := os.ReadDir(path)
+func createSimLinks(version string) {
 
-	for _, file := range dir {
-		os.Rename(path+"/"+file.Name(), path+"/"+version+".jdk")
+	directories := []string{"conf", "include", "jmods", "legal", "lib", "bin", "man"}
+
+	for _, directory := range directories {
+		root := filepath.Join(jdkutil.GetCandidatesDir(), version)
+		var target = ""
+
+		filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if d.Name() == directory {
+				target = path
+			}
+			return nil
+		})
+
+		symlink := jdkutil.GetCandidatesDir() + "/" + version + "/" + directory
+		if target != "" {
+			os.Symlink(target, symlink)
+		}
+
 	}
-}
-
-func createSimlinks(version string) {
-	symlink := jdkutil.GetCandidatesDir() + "/" + version + "/bin"
-	target := jdkutil.GetCandidatesDir() + "/" + version + "/" + version + ".jdk/Contents/Home/bin"
-	os.Symlink(target, symlink)
 }
 
 func addVersion(version string) {
@@ -141,13 +150,20 @@ func addAlias(version, alias string) {
 	os.WriteFile(jdkutil.GetConfigDir()+"/"+alias, []byte(version), 0644)
 }
 
-func untarJdk(fileName, destination string) {
-	open, _ := os.Open(fileName)
+func unTarJdk(fileName, destination string) {
+	open, err := os.Open(fileName)
+
+	if err != nil {
+		fmt.Println(err)
+		_ = os.Remove(fileName)
+		os.Exit(1)
+	}
 
 	gzipReader, err := gzip.NewReader(open)
 	if err != nil {
-		fmt.Println("Cloud not read JDK tarball")
+		fmt.Println("Could not read JDK tarball")
 		_ = os.Remove(fileName)
+		os.Exit(1)
 	}
 	defer gzipReader.Close()
 
@@ -163,6 +179,7 @@ func untarJdk(fileName, destination string) {
 		case err != nil:
 			fmt.Println("Something went wrong while unpacking tarball")
 			_ = os.Remove(fileName)
+			_ = os.RemoveAll(destination)
 			os.Exit(1)
 		case header == nil:
 			continue
@@ -171,29 +188,29 @@ func untarJdk(fileName, destination string) {
 
 		switch header.Typeflag {
 
-		// if its a dir and it doesn't exist create it
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
 				if err := os.MkdirAll(target, 0755); err != nil {
 					fmt.Println("Something went wrong while unpacking tarball")
 					_ = os.Remove(fileName)
+					_ = os.RemoveAll(destination)
 					os.Exit(1)
 				}
 			}
 
-		// if it's a file create it
 		case tar.TypeReg:
 			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				fmt.Println("Something went wrong while unpacking tarball")
 				_ = os.Remove(fileName)
+				_ = os.RemoveAll(destination)
 				os.Exit(1)
 			}
 
-			// copy over contents
 			if _, err := io.Copy(f, tarReader); err != nil {
 				fmt.Println("Something went wrong while unpacking tarball")
 				_ = os.Remove(fileName)
+				_ = os.RemoveAll(destination)
 				os.Exit(1)
 			}
 

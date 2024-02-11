@@ -1,7 +1,7 @@
 package jdkutil
 
 import (
-	"fmt"
+	"github.com/TheCheerfulDev/jdk-go/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,36 +9,29 @@ import (
 
 const versionFile string = ".java-version"
 
-var configDir string
+var cfg config.Config
 
 func GetConfigDir() string {
-	if configDir == "" {
-		homeDir, _ := os.UserHomeDir()
-		configDir = homeDir + "/.config/jdk-go"
-	}
-	return configDir
+	return cfg.ConfigDir
 }
 
 func GetCandidatesDir() string {
-	return GetConfigDir() + "/candidates"
+	return cfg.CandidateDir
 }
 
 func GetJenvVersionsDir() string {
-	homeDir, _ := os.UserHomeDir()
-	return homeDir + "/.jenv/versions"
+	return cfg.JenvVersionsDir
 }
 
 func GetJenvDir() string {
-	homeDir, _ := os.UserHomeDir()
-	return homeDir + "/.jenv"
+	return cfg.JenvDir
 }
 
-func GetActiveVersion() (version, versionFilePath string) {
+func GetActiveVersion() (version, versionFilePath string, err error) {
 	currentDirectory, err := os.Getwd()
 
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return "", "", err
 	}
 
 	for {
@@ -48,19 +41,17 @@ func GetActiveVersion() (version, versionFilePath string) {
 
 		versionFilePath = currentDirectory + versionFile
 		if _, err := os.Stat(currentDirectory + versionFile); !os.IsNotExist(err) {
-			return ExtractActiveVersionFromFile(versionFilePath), versionFilePath
+			return ExtractActiveVersionFromFile(versionFilePath), versionFilePath, nil
 		}
 
 		if currentDirectory == "/" {
 			homeDir, _ := os.UserHomeDir()
 			versionFilePath = homeDir + "/.jenv/version"
-			return ExtractActiveVersionFromFile(versionFilePath), versionFilePath
+			return ExtractActiveVersionFromFile(versionFilePath), versionFilePath, nil
 		}
 
 		currentDirectory = filepath.Clean(filepath.Join(currentDirectory, ".."))
 	}
-
-	return "nope", versionFilePath
 
 }
 
@@ -75,4 +66,8 @@ func RemoveNewLineFromString(input string) string {
 	input = strings.ReplaceAll(input, "\n", "")
 	input = strings.ReplaceAll(input, "\r", "")
 	return input
+}
+
+func Init(c config.Config) {
+	cfg = c
 }

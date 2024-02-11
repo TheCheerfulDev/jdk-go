@@ -14,7 +14,7 @@ var psCmd = &cobra.Command{
 	Long:  "This is the long stuff",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Active JDK:")
-		activeVersion, path := jdkutil.GetActiveVersion()
+		activeVersion, path, err := jdkutil.GetActiveVersion()
 
 		configDir = jdkutil.GetConfigDir()
 
