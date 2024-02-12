@@ -4,7 +4,8 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
-	"github.com/TheCheerfulDev/jdk-go/jdkutil"
+	"github.com/TheCheerfulDev/jdk/config"
+	"github.com/TheCheerfulDev/jdk/jdkutil"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"io"
@@ -17,9 +18,10 @@ import (
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add [url of JDK tarball]",
-	Short: "Add a JDK from the provided URL",
-	Args:  cobra.ExactArgs(1),
+	Use:     "add [url of JDK tarball]",
+	Aliases: []string{"install"},
+	Short:   "Add a JDK from the provided URL",
+	Args:    cobra.ExactArgs(1),
 	Long: `This command adds a new JDK. For this to work you must provide an URL
 pointing to a tarball (.tar.gz) of the JDK you want to add.
 
@@ -70,7 +72,7 @@ func doesFileAlreadyExist(fileName string) bool {
 		return false
 	}
 
-	_, err := os.Stat(jdkutil.GetConfigDir() + "/" + fileName)
+	_, err := os.Stat(config.Dir() + "/" + fileName)
 	return !os.IsNotExist(err)
 }
 
@@ -84,8 +86,8 @@ func printSuccessMessage(version, alias string) {
 }
 
 func addJdk(version, alias string) {
-	fileName := jdkutil.GetCandidatesDir() + "/" + version + ".tar.gz"
-	destination := jdkutil.GetCandidatesDir() + "/" + version
+	fileName := config.CandidatesDir() + "/" + version + ".tar.gz"
+	destination := config.CandidatesDir() + "/" + version
 
 	unTarJdk(fileName, destination)
 	addVersion(version)
@@ -96,8 +98,8 @@ func addJdk(version, alias string) {
 }
 
 func addJdkToJenv(version, alias string) {
-	symlink := jdkutil.GetJenvVersionsDir() + "/" + version
-	target := jdkutil.GetCandidatesDir() + "/" + version
+	symlink := config.JenvVersionsDir() + "/" + version
+	target := config.CandidatesDir() + "/" + version
 	err := os.Symlink(target, symlink)
 
 	if err != nil {
@@ -105,8 +107,8 @@ func addJdkToJenv(version, alias string) {
 	}
 
 	if alias != "" {
-		symlink := jdkutil.GetJenvVersionsDir() + "/" + alias
-		target := jdkutil.GetCandidatesDir() + "/" + version
+		symlink := config.JenvVersionsDir() + "/" + alias
+		target := config.CandidatesDir() + "/" + version
 		err := os.Symlink(target, symlink)
 		if err != nil {
 			fmt.Println(err)
@@ -119,7 +121,7 @@ func createSimLinks(version string) {
 	directories := []string{"conf", "include", "jmods", "legal", "lib", "bin", "man"}
 
 	for _, directory := range directories {
-		root := filepath.Join(jdkutil.GetCandidatesDir(), version)
+		root := filepath.Join(config.CandidatesDir(), version)
 		var target = ""
 
 		filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
@@ -129,7 +131,7 @@ func createSimLinks(version string) {
 			return nil
 		})
 
-		symlink := jdkutil.GetCandidatesDir() + "/" + version + "/" + directory
+		symlink := config.CandidatesDir() + "/" + version + "/" + directory
 		if target != "" {
 			os.Symlink(target, symlink)
 		}
@@ -138,8 +140,7 @@ func createSimLinks(version string) {
 }
 
 func addVersion(version string) {
-	//make jdk-go version file
-	versionFile, _ := os.Create(jdkutil.GetConfigDir() + "/" + version)
+	versionFile, _ := os.Create(filepath.Join(config.Dir(), version))
 	versionFile.Close()
 }
 
@@ -147,7 +148,7 @@ func addAlias(version, alias string) {
 	if alias == "" {
 		return
 	}
-	os.WriteFile(jdkutil.GetConfigDir()+"/"+alias, []byte(version), 0644)
+	os.WriteFile(filepath.Join(config.Dir(), alias), []byte(version), 0644)
 }
 
 func unTarJdk(fileName, destination string) {
@@ -221,7 +222,7 @@ func unTarJdk(fileName, destination string) {
 }
 
 func downloadJdkFromUrl(url, version string) {
-	fileName := jdkutil.GetCandidatesDir() + "/" + version + ".tar.gz"
+	fileName := config.CandidatesDir() + "/" + version + ".tar.gz"
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -248,5 +249,19 @@ func downloadJdkFromUrl(url, version string) {
 }
 
 func init() {
+	addCmd.SetUsageTemplate(`
+Usage: 
+  jdk-go add [url of JDK tarball]
+
+Aliases:
+  add, install
+
+Resources for downloading JDKs:
+  Amazon Corretto: https://aws.amazon.com/corretto/
+  Azul Zulu:       https://www.azul.com/downloads/
+  OpenJDK:         https://jdk.java.net/
+  Oracle JDK:      https://www.oracle.com/java/technologies/downloads/
+  Temurin:         https://adoptium.net/temurin/releases/
+`)
 	rootCmd.AddCommand(addCmd)
 }

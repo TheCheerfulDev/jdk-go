@@ -1,4 +1,4 @@
-module github.com/TheCheerfulDev/jdk-go
+module github.com/TheCheerfulDev/jdk
 
 go 1.22.0
 

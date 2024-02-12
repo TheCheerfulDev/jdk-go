@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/TheCheerfulDev/jdk-go/jdkutil"
-	"os"
-
+	"github.com/TheCheerfulDev/jdk/versions"
 	"github.com/spf13/cobra"
 )
 
@@ -21,25 +19,10 @@ Example usage:
 	jdk-go global 21`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) == 0 {
-			fileContent, err := os.ReadFile(jdkutil.GetJenvDir() + "/version")
-
-			if err != nil {
-				fmt.Println("No global JDK version is defined")
-				os.Exit(1)
-			}
-
-			fmt.Println(string(fileContent))
-			os.Exit(0)
+		err := versions.SetOrShowGlobalVersion(args)
+		if err != nil {
+			fmt.Println(err)
 		}
-		version := args[0]
-
-		if _, err := os.Stat(jdkutil.GetConfigDir() + "/" + version); os.IsNotExist(err) {
-			fmt.Printf("JDK version %v does not exist\n", version)
-			os.Exit(1)
-		}
-
-		os.WriteFile(jdkutil.GetJenvDir()+"/version", []byte(version), os.ModePerm)
 	},
 }
 

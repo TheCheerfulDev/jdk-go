@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -9,7 +10,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "jdk-go",
 	Short:   "",
-	Version: "1.0.0",
+	Version: "0.8.0",
 	Long: `This is a go implementation of the JDK wrapper.
 This CLI app is used to manage your Java JDK installations.`,
 	// Uncomment the following line if your bare application
@@ -27,13 +28,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jdk-go.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.SetVersionTemplate(fmt.Sprintf("jdk version %s - © Mark Hendriks <thecheerfuldev>\n", rootCmd.Version))
 }

@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/TheCheerfulDev/jdk-go/jdkutil"
+	"github.com/TheCheerfulDev/jdk/config"
+	"github.com/TheCheerfulDev/jdk/versions"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -18,31 +19,13 @@ Example usage:
 	jdk-go rm 21-tem`,
 	ValidArgsFunction: CustomVersionCompletion,
 	Run: func(cmd *cobra.Command, args []string) {
-		// check if jdk exists
-
 		versionToRemove := args[0]
 
-		if _, err := os.Stat(jdkutil.GetConfigDir() + "/" + versionToRemove); os.IsNotExist(err) {
-			fmt.Printf("JDK version %v does not exist\n", versionToRemove)
+		err, aliasToRemove, hasAlias := versions.Remove(versionToRemove)
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
-
-		hasAlias, aliasToRemove := getAliasForVersion(versionToRemove)
-
-		// remove aliasToRemove from jenv
-		if hasAlias {
-			_ = os.Remove(jdkutil.GetJenvVersionsDir() + "/" + aliasToRemove)
-			// remove aliasToRemove file
-			_ = os.Remove(jdkutil.GetConfigDir() + "/" + aliasToRemove)
-		}
-
-		// remove version from jenv
-		_ = os.Remove(jdkutil.GetJenvVersionsDir() + "/" + versionToRemove)
-		// remove version file
-		_ = os.Remove(jdkutil.GetConfigDir() + "/" + versionToRemove)
-
-		// remove candidate version directory
-		_ = os.RemoveAll(jdkutil.GetCandidatesDir() + "/" + versionToRemove)
 
 		printRemovalSuccesMessage(versionToRemove, aliasToRemove, hasAlias)
 	},
@@ -56,39 +39,8 @@ func printRemovalSuccesMessage(versionToRemove string, aliasToRemove string, has
 	fmt.Printf("Succesfully removed JDK version %v\n", versionToRemove)
 }
 
-func getAliasForVersion(version string) (bool, string) {
-	configDir := jdkutil.GetConfigDir()
-
-	files, _ := os.ReadDir(configDir)
-
-	for _, file := range files {
-		if !IsVersionFile(file) {
-			continue
-		}
-
-		fileContent, _ := os.ReadFile(configDir + "/" + file.Name())
-		versionInFile := string(fileContent)
-		if versionInFile == version {
-			return true, file.Name()
-		}
-
-	}
-
-	return false, ""
-}
-
 func init() {
 	rootCmd.AddCommand(rmCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// rmCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func CustomVersionCompletion(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
@@ -97,15 +49,15 @@ func CustomVersionCompletion(_ *cobra.Command, args []string, _ string) ([]strin
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	dir, _ := os.ReadDir(jdkutil.GetConfigDir())
+	dir, _ := os.ReadDir(config.Dir())
 
-	versions := make([]string, 2)
+	versionList := make([]string, 2)
 
 	for _, file := range dir {
-		if IsVersionFile(file) {
-			versions = append(versions, file.Name())
+		if versions.IsVersionFile(file) {
+			versionList = append(versionList, file.Name())
 		}
 	}
 
-	return versions, cobra.ShellCompDirectiveNoFileComp
+	return versionList, cobra.ShellCompDirectiveNoFileComp
 }

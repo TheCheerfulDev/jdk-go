@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/TheCheerfulDev/jdk-go/jdkutil"
+	"github.com/TheCheerfulDev/jdk/config"
+	"github.com/TheCheerfulDev/jdk/versions"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
 )
 
-var configDir = jdkutil.GetConfigDir()
+var configDir = config.Dir()
 var activeVersion string
 
 // lsCmd represents the ls command
@@ -21,13 +22,13 @@ If a version is an alias, it will be displayed after ->.
 The currently active version will be preceded by an asterisk (*).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		activeVersion, _, err = jdkutil.GetActiveVersion()
+		activeVersion, _, err = versions.Active()
 		if err != nil {
 			fmt.Println("Could not read the active version")
 			os.Exit(1)
 		}
 
-		configDir = jdkutil.GetConfigDir()
+		configDir = config.Dir()
 		files, err := os.ReadDir(configDir)
 		if err != nil {
 			fmt.Println("Could not read the config directory")
@@ -37,7 +38,7 @@ The currently active version will be preceded by an asterisk (*).`,
 		fmt.Println("Installed JDKs:")
 
 		for _, file := range files {
-			if IsVersionFile(file) {
+			if versions.IsVersionFile(file) {
 				printVersionInformation(file)
 			}
 		}
@@ -63,10 +64,6 @@ func getPrefixText(version string) interface{} {
 		return "*"
 	}
 	return " "
-}
-
-func IsVersionFile(file os.DirEntry) bool {
-	return !file.IsDir() && !strings.HasPrefix(file.Name(), ".")
 }
 
 func init() {
