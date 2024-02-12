@@ -43,9 +43,9 @@ func Default() Config {
 func Init(c Config) {
 	cfg = c
 	if _, err := os.Stat(cfg.Dir); os.IsNotExist(err) {
-		os.Mkdir(cfg.Dir, os.ModePerm)
+		os.MkdirAll(cfg.Dir, os.ModePerm)
 	}
 	if _, err := os.Stat(cfg.CandidatesDir); os.IsNotExist(err) {
-		os.Mkdir(cfg.Dir, os.ModePerm)
+		os.MkdirAll(cfg.CandidatesDir, os.ModePerm)
 	}
 }

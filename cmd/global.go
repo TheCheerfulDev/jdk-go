@@ -16,7 +16,7 @@ var globalCmd = &cobra.Command{
 provided version. You can also use an alias.
 
 Example usage:
-	jdk-go global 21`,
+	jdk global 21`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		err := versions.SetOrShowGlobalVersion(args)

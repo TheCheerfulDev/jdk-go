@@ -16,7 +16,7 @@ var localCmd = &cobra.Command{
 provided version. You can also use an alias.
 
 Example usage:
-	jdk-go local 21`,
+	jdk local 21`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := versions.SetOrShowLocalVersion(args)
 		if err != nil {

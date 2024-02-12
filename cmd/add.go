@@ -26,7 +26,7 @@ var addCmd = &cobra.Command{
 pointing to a tarball (.tar.gz) of the JDK you want to add.
 
 example:
-	jdk-go add https://www.myjdk.com/21/jdk-21.tar.gz`,
+	jdk add https://www.myjdk.com/21/jdk-21.tar.gz`,
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
 
@@ -72,7 +72,7 @@ func doesFileAlreadyExist(fileName string) bool {
 		return false
 	}
 
-	_, err := os.Stat(config.Dir() + "/" + fileName)
+	_, err := os.Stat(filepath.Join(config.Dir(), fileName))
 	return !os.IsNotExist(err)
 }
 
@@ -86,8 +86,8 @@ func printSuccessMessage(version, alias string) {
 }
 
 func addJdk(version, alias string) {
-	fileName := config.CandidatesDir() + "/" + version + ".tar.gz"
-	destination := config.CandidatesDir() + "/" + version
+	fileName := filepath.Join(config.CandidatesDir(), version) + ".tar.gz"
+	destination := filepath.Join(config.CandidatesDir(), version)
 
 	unTarJdk(fileName, destination)
 	addVersion(version)
@@ -98,12 +98,13 @@ func addJdk(version, alias string) {
 }
 
 func addJdkToJenv(version, alias string) {
-	symlink := config.JenvVersionsDir() + "/" + version
-	target := config.CandidatesDir() + "/" + version
+	symlink := filepath.Join(config.JenvVersionsDir(), version)
+	target := filepath.Join(config.CandidatesDir(), version)
 	err := os.Symlink(target, symlink)
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	if alias != "" {
@@ -131,7 +132,7 @@ func createSimLinks(version string) {
 			return nil
 		})
 
-		symlink := config.CandidatesDir() + "/" + version + "/" + directory
+		symlink := filepath.Join(config.CandidatesDir(), version, directory)
 		if target != "" {
 			os.Symlink(target, symlink)
 		}
@@ -148,7 +149,7 @@ func addAlias(version, alias string) {
 	if alias == "" {
 		return
 	}
-	os.WriteFile(filepath.Join(config.Dir(), alias), []byte(version), 0644)
+	_ = os.WriteFile(filepath.Join(config.Dir(), alias), []byte(version), 0644)
 }
 
 func unTarJdk(fileName, destination string) {

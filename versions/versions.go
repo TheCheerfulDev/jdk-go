@@ -12,11 +12,6 @@ import (
 
 const versionFile = ".java-version"
 
-type Version struct {
-	Version string
-	Alias   string
-}
-
 func RemoveLocalVersion() (err error) {
 	dir, _ := os.Getwd()
 	err = os.Remove(dir + "/.java-version")
@@ -32,7 +27,7 @@ func SetOrShowGlobalVersion(args []string) (err error) {
 	if len(args) == 0 {
 		fileContent, err := os.ReadFile(config.JenvDir() + "/version")
 		if err != nil {
-			return errors.New("No global JDK version is defined")
+			return errors.New("No global JDK version defined")
 		}
 		globalVersion := string(fileContent)
 		globalVersion = jdkutil.RemoveNewLineFromString(globalVersion)
@@ -70,11 +65,7 @@ func SetOrShowLocalVersion(args []string) (err error) {
 }
 
 func Active() (version, versionFilePath string, err error) {
-	currentDirectory, err := os.Getwd()
-
-	if err != nil {
-		return "", "", err
-	}
+	currentDirectory, _ := os.Getwd()
 
 	for {
 		if !strings.HasSuffix(currentDirectory, "/") {
@@ -82,14 +73,15 @@ func Active() (version, versionFilePath string, err error) {
 		}
 
 		versionFilePath = currentDirectory + versionFile
-		if _, err := os.Stat(currentDirectory + versionFile); !os.IsNotExist(err) {
-			return extractActiveVersionFromFile(versionFilePath), versionFilePath, nil
+		if _, err := os.Stat(versionFilePath); !os.IsNotExist(err) {
+			versionInFile, err := extractActiveVersionFromFile(versionFilePath)
+			return versionInFile, versionFilePath, err
 		}
 
 		if currentDirectory == "/" {
-			homeDir, _ := os.UserHomeDir()
-			versionFilePath = homeDir + "/.jenv/version"
-			return extractActiveVersionFromFile(versionFilePath), versionFilePath, nil
+			versionFilePath = filepath.Join(config.JenvDir(), "version")
+			versionInFile, err := extractActiveVersionFromFile(versionFilePath)
+			return versionInFile, versionFilePath, err
 		}
 
 		currentDirectory = filepath.Clean(filepath.Join(currentDirectory, ".."))
@@ -140,9 +132,12 @@ func IsVersionFile(file os.DirEntry) bool {
 	return !file.IsDir() && !strings.HasPrefix(file.Name(), ".")
 }
 
-func extractActiveVersionFromFile(filePath string) (version string) {
-	fileContent, _ := os.ReadFile(filePath)
+func extractActiveVersionFromFile(filePath string) (version string, err error) {
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
 	version = string(fileContent)
 	version = jdkutil.RemoveNewLineFromString(version)
-	return version
+	return version, nil
 }

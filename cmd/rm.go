@@ -16,7 +16,7 @@ var rmCmd = &cobra.Command{
 	Long: `This function removes the provided JDK, along with any alias it might have.
 
 Example usage:
-	jdk-go rm 21-tem`,
+	jdk rm 21-tem`,
 	ValidArgsFunction: CustomVersionCompletion,
 	Run: func(cmd *cobra.Command, args []string) {
 		versionToRemove := args[0]
@@ -24,7 +24,7 @@ Example usage:
 		err, aliasToRemove, hasAlias := versions.Remove(versionToRemove)
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 
 		printRemovalSuccesMessage(versionToRemove, aliasToRemove, hasAlias)

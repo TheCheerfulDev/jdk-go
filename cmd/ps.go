@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/TheCheerfulDev/jdk/config"
 	"github.com/TheCheerfulDev/jdk/jdkutil"
@@ -17,20 +18,26 @@ var psCmd = &cobra.Command{
 	Short: "Show the currently active JDK and its jenv origin.",
 	Long:  "This is the long stuff",
 	Run: func(cmd *cobra.Command, args []string) {
-		handlePs()
+		err := handlePs()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
-func handlePs() {
+func handlePs() error {
 	activeVersion, path, err := versions.Active()
+	if err != nil {
+		return errors.New("Could not read the active version")
+	}
 
 	configDir = config.Dir()
 
 	file, err := os.ReadFile(filepath.Join(configDir, activeVersion))
 
 	if err != nil {
-		fmt.Printf("Active JDK version %v does not exist\n", activeVersion)
-		os.Exit(1)
+		return errors.New(fmt.Sprintf("Active JDK version %v does not exist", activeVersion))
 	}
 
 	fmt.Println("Active JDK:")
@@ -39,10 +46,11 @@ func handlePs() {
 
 	if fileContent != "" {
 		fmt.Printf("  %v (set by %v) -> %v\n", activeVersion, path, fileContent)
-		return
+		return nil
 	}
 
 	fmt.Printf("  %v (set by %v)\n", activeVersion, path)
+	return nil
 }
 
 func init() {

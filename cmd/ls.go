@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/TheCheerfulDev/jdk/config"
 	"github.com/TheCheerfulDev/jdk/versions"
@@ -21,29 +22,32 @@ var lsCmd = &cobra.Command{
 If a version is an alias, it will be displayed after ->.
 The currently active version will be preceded by an asterisk (*).`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
-		activeVersion, _, err = versions.Active()
+		err := handleLs()
 		if err != nil {
-			fmt.Println("Could not read the active version")
+			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		configDir = config.Dir()
-		files, err := os.ReadDir(configDir)
-		if err != nil {
-			fmt.Println("Could not read the config directory")
-			os.Exit(1)
-		}
-
-		fmt.Println("Installed JDKs:")
-
-		for _, file := range files {
-			if versions.IsVersionFile(file) {
-				printVersionInformation(file)
-			}
-		}
-
 	},
+}
+
+func handleLs() error {
+	var err error
+	activeVersion, _, err = versions.Active()
+	if err != nil {
+		return errors.New("Could not read the active version")
+	}
+
+	configDir = config.Dir()
+	files, _ := os.ReadDir(configDir)
+
+	fmt.Println("Installed JDKs:")
+
+	for _, file := range files {
+		if versions.IsVersionFile(file) {
+			printVersionInformation(file)
+		}
+	}
+	return nil
 }
 
 func printVersionInformation(file os.DirEntry) {
