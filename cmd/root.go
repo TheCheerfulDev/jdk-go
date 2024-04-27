@@ -10,7 +10,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "jdk",
 	Short:   "",
-	Version: "0.1.2",
+	Version: "0.1.3",
 	Long: `This is a go implementation of the JDK wrapper.
 This CLI app is used to manage your Java JDK installations.`,
 }

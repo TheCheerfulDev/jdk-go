@@ -7,16 +7,17 @@ import (
 	"github.com/TheCheerfulDev/jdk/versions"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-var configDir = config.Dir()
 var activeVersion string
 
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "List all installed JDK versions",
+	Use:     "ls",
+	Aliases: []string{"list"},
+	Short:   "List all installed JDK versions",
 	Long: `As the naming convention implies, this command lists all installed JDK versions.
 
 If a version is an alias, it will be displayed after ->.
@@ -37,8 +38,7 @@ func handleLs() error {
 		return errors.New("Could not read the active version")
 	}
 
-	configDir = config.Dir()
-	files, _ := os.ReadDir(configDir)
+	files, _ := os.ReadDir(config.Dir())
 
 	fmt.Println("Installed JDKs:")
 
@@ -52,11 +52,11 @@ func handleLs() error {
 
 func printVersionInformation(file os.DirEntry) {
 	fileInfo, _ := file.Info()
-	readFile, _ := os.ReadFile(configDir + "/" + file.Name())
+	readFile, _ := os.ReadFile(filepath.Join(config.Dir(), file.Name()))
 	prefixText := getPrefixText(file.Name())
 
 	if fileInfo.Size() > 0 {
-		fmt.Println(prefixText, file.Name(), "             ->", strings.ReplaceAll(string(readFile), "\n", ""))
+		fmt.Printf("%s %-15s -> %s\n", prefixText, file.Name(), strings.ReplaceAll(string(readFile), "\n", ""))
 		return
 	}
 

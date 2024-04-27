@@ -32,9 +32,7 @@ func handlePs() error {
 		return errors.New("Could not read the active version")
 	}
 
-	configDir = config.Dir()
-
-	file, err := os.ReadFile(filepath.Join(configDir, activeVersion))
+	file, err := os.ReadFile(filepath.Join(config.Dir(), activeVersion))
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("Active JDK version %v does not exist", activeVersion))
